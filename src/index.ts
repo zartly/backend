@@ -1,4 +1,5 @@
 import { Server } from 'http';
+
 import app from './app';
 import prisma from './client';
 import config from './config/config';

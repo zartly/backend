@@ -1,9 +1,10 @@
 import { ErrorRequestHandler } from 'express';
 import { Prisma } from '@prisma/client';
 import httpStatus from 'http-status';
-import config from '../config/config';
-import logger from '../config/logger';
-import ApiError from '../utils/ApiError';
+
+import config from '~/config/config';
+import logger from '~/config/logger';
+import ApiError from '~/utils/ApiError';
 
 export const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
   let error = err;

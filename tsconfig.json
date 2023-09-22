@@ -4,6 +4,10 @@
     "outDir": "./build",
     "module": "commonjs",
     "types": ["node"],
+    "baseUrl": "./",
+    "paths": {
+      "~/*": ["src/*"]
+    },
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
