@@ -4,6 +4,7 @@ import compression from 'compression';
 import cors from 'cors';
 import passport from 'passport';
 import httpStatus from 'http-status';
+
 import config from './config/config';
 import morgan from './config/morgan';
 import xss from './middlewares/xss';

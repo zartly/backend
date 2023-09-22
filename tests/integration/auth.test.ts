@@ -4,17 +4,19 @@ import httpStatus from 'http-status';
 import httpMocks from 'node-mocks-http';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import app from '../../src/app';
-import config from '../../src/config/config';
-import auth from '../../src/middlewares/auth';
-import { emailService, tokenService } from '../../src/services';
-import ApiError from '../../src/utils/ApiError';
-import setupTestDB from '../utils/setupTestDb';
 import { describe, beforeEach, test, expect, jest } from '@jest/globals';
-import { userOne, admin, insertUsers } from '../fixtures/user.fixture';
 import { Role, TokenType, User } from '@prisma/client';
-import prisma from '../../src/client';
-import { roleRights } from '../../src/config/roles';
+
+import app from '@src/app';
+import config from '@src/config/config';
+import auth from '@src/middlewares/auth';
+import { emailService, tokenService } from '@src/services';
+import ApiError from '@src/utils/ApiError';
+import prisma from '@src/client';
+import { roleRights } from '@src/config/roles';
+
+import setupTestDB from '../utils/setupTestDb';
+import { userOne, admin, insertUsers } from '../fixtures/user.fixture';
 
 setupTestDB();
 

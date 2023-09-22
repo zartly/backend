@@ -1,5 +1,6 @@
-import prisma from '../../src/client';
 import { beforeAll, beforeEach, afterAll } from '@jest/globals';
+
+import prisma from '@src/client';
 
 const setupTestDB = () => {
   beforeAll(async () => {

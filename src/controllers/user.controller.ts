@@ -1,8 +1,9 @@
 import httpStatus from 'http-status';
-import pick from '../utils/pick';
-import ApiError from '../utils/ApiError';
-import catchAsync from '../utils/catchAsync';
-import { userService } from '../services';
+
+import pick from '@src/utils/pick';
+import ApiError from '@src/utils/ApiError';
+import catchAsync from '@src/utils/catchAsync';
+import { userService } from '@src/services';
 
 const createUser = catchAsync(async (req, res) => {
   const { email, password, name, role } = req.body;

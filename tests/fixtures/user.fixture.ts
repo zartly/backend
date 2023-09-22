@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { faker } from '@faker-js/faker';
-import prisma from '../../src/client';
 import { Prisma, Role } from '@prisma/client';
+
+import prisma from '@src/client';
 
 const password = 'password1';
 const salt = bcrypt.genSaltSync(8);
