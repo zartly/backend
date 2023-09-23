@@ -13,7 +13,7 @@ import auth from '@src/middlewares/auth';
 import { emailService, tokenService } from '@src/services';
 import ApiError from '@src/utils/ApiError';
 import prisma from '@src/client';
-import { roleRights } from '@src/config/roles';
+import { type RoleRights, roleRights } from '@src/config/roles';
 
 import setupTestDB from '../utils/setupTestDb';
 import { userOne, admin, insertUsers } from '../fixtures/user.fixture';
@@ -793,7 +793,7 @@ describe('Auth middleware', () => {
     });
     const next = jest.fn();
 
-    await auth('anyRight')(req, httpMocks.createResponse(), next);
+    await auth('getUsers')(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
@@ -815,7 +815,7 @@ describe('Auth middleware', () => {
     });
     const next = jest.fn();
 
-    await auth('anyRight')(req, httpMocks.createResponse(), next);
+    await auth('getUsers')(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });
@@ -834,7 +834,11 @@ describe('Auth middleware', () => {
     });
     const next = jest.fn();
 
-    await auth(...(roleRights.get(Role.ADMIN) as string[]))(req, httpMocks.createResponse(), next);
+    await auth(...(roleRights.get(Role.ADMIN) as RoleRights[]))(
+      req,
+      httpMocks.createResponse(),
+      next
+    );
 
     expect(next).toHaveBeenCalledWith();
   });

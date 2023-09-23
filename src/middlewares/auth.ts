@@ -1,3 +1,5 @@
+import type { RoleRights } from '@src/config/roles';
+
 import passport from 'passport';
 import httpStatus from 'http-status';
 import { NextFunction, Request, Response } from 'express';
@@ -11,7 +13,7 @@ const verifyCallback =
     req: any,
     resolve: (value?: unknown) => void,
     reject: (reason?: unknown) => void,
-    requiredRights: string[]
+    requiredRights: RoleRights[]
   ) =>
   async (err: unknown, user: User | false, info: unknown) => {
     if (err || info || !user) {
@@ -33,7 +35,7 @@ const verifyCallback =
   };
 
 const auth =
-  (...requiredRights: string[]) =>
+  (...requiredRights: RoleRights[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     return new Promise((resolve, reject) => {
       passport.authenticate(
