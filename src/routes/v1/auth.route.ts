@@ -131,7 +131,7 @@ export default router;
  *               $ref: '#/components/schemas/Error'
  *             example:
  *               code: 401
- *               message: Invalid email or password
+ *               message: Invalid token
  */
 
 /**
@@ -140,6 +140,8 @@ export default router;
  *   post:
  *     summary: Session
  *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: OK
@@ -148,8 +150,8 @@ export default router;
  *             schema:
  *               type: object
  *               properties:
- *                 tokens:
- *                   $ref: '#/components/schemas/AuthTokens'
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
  *       "401":
  *         description: Invalid email or password
  *         content:
