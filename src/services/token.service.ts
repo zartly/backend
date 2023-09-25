@@ -70,10 +70,22 @@ const verifyToken = async (token: string, type: TokenType): Promise<Token> => {
   const payload = jwt.verify(token, config.jwt.secret);
   const userId = Number(payload.sub);
   const tokenData = await prisma.token.findFirst({
-    where: { token, type, userId, blacklisted: false }
+    where: { token, type, userId }
   });
+
+  if (tokenData?.blacklisted) {
+    throw new Error('This token is blacklisted');
+  }
+
   if (!tokenData) {
-    throw new Error('Token not found');
+    // in case a (valid) refresh token arives here but it is not in the database
+    // (i.e., someone else used it), force the sign-in from all devices again and add token to blacklist
+    if (type === 'REFRESH') {
+      await prisma.token.deleteMany({ where: { userId } });
+      await saveToken(token, userId, moment().add(364, 'days'), type, true);
+    }
+
+    throw new Error('Refresh token unavailable. You need to perform the sign in again.');
   }
   return tokenData;
 };

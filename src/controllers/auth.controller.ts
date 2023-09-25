@@ -4,6 +4,7 @@ import { User } from '@prisma/client';
 import { authService, userService, tokenService, emailService } from '@src/services';
 import exclude from '@src/utils/exclude';
 import catchAsync from '@src/utils/catchAsync';
+import config from '@src/config/config';
 
 const register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
@@ -18,6 +19,28 @@ const login = catchAsync(async (req, res) => {
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
   res.send({ user, tokens });
+});
+
+const session = catchAsync(async (req, res) => {
+  const existingRefreshToken = req.cookies[config.jwt.refreshTokenName];
+
+  if (existingRefreshToken) {
+    res.clearCookie(config.jwt.refreshTokenName);
+    const newTokens = await authService.refreshAuth(existingRefreshToken);
+    const user = await authService.loginUserWithToken(newTokens.refresh.token);
+
+    res.cookie(config.jwt.refreshTokenName, newTokens.refresh.token, {
+      httpOnly: true,
+      expires: newTokens.refresh.expires
+    });
+    res.cookie(config.jwt.accessTokenName, newTokens.access.token, {
+      httpOnly: true,
+      expires: newTokens.access.expires
+    });
+    return res.send({ user });
+  }
+
+  res.status(httpStatus.OK).send({ user: null });
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -56,6 +79,7 @@ const verifyEmail = catchAsync(async (req, res) => {
 export default {
   register,
   login,
+  session,
   logout,
   refreshTokens,
   forgotPassword,

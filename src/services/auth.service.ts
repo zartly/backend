@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import jwt from 'jsonwebtoken';
 import { TokenType, User } from '@prisma/client';
 
 import ApiError from '@src/utils/ApiError';
@@ -33,6 +34,16 @@ const loginUserWithEmailAndPassword = async (
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
+  return exclude(user, ['password']);
+};
+
+const loginUserWithToken = async (refreshToken: string) => {
+  // TODO Change jwt to verify after devide secret to refresh secret & access secret
+  const payload = jwt.decode(refreshToken);
+  const userId = Number(payload?.sub);
+  const user = await userService.getUserById(userId);
+
+  if (!user) throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
   return exclude(user, ['password']);
 };
 
@@ -117,6 +128,7 @@ const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
 
 export default {
   loginUserWithEmailAndPassword,
+  loginUserWithToken,
   isPasswordMatch,
   encryptPassword,
   logout,

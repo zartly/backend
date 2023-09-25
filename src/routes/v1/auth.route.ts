@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
+router.get('/session', authController.session);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post(
   '/refresh-tokens',
@@ -120,6 +121,33 @@ export default router;
  *               properties:
  *                 user:
  *                   $ref: '#/components/schemas/User'
+ *                 tokens:
+ *                   $ref: '#/components/schemas/AuthTokens'
+ *       "401":
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               code: 401
+ *               message: Invalid email or password
+ */
+
+/**
+ * @swagger
+ * /auth/session:
+ *   post:
+ *     summary: Session
+ *     tags: [Auth]
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
  *                 tokens:
  *                   $ref: '#/components/schemas/AuthTokens'
  *       "401":
