@@ -5,5 +5,5 @@ export interface TokenResponse {
 
 export interface AuthTokensResponse {
   access: TokenResponse;
-  refresh?: TokenResponse;
+  refresh: TokenResponse;
 }

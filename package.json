@@ -1,9 +1,9 @@
 {
-  "name": "prisma-express-typescript-boilerplate",
+  "name": "zarly-backend",
   "version": "1.0.0",
-  "description": "REST API Boilerplate with Node JS, TypeScript, Express and Prisma",
+  "description": "Zarly backend",
   "main": "src/index.ts",
-  "repository": "https://github.com/antonio-lazaro/prisma-express-typescript-boilerplate.git",
+  "repository": "https://github.com/zartly/backend.git",
   "_moduleAliases": {
     "@root": ".",
     "@src": "src"
@@ -53,6 +53,7 @@
     "@faker-js/faker": "^7.6.0",
     "@jest/globals": "^29.3.1",
     "@types/compression": "^1.7.2",
+    "@types/cookie-parser": "^1.4.4",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.14",
     "@types/jest": "^29.2.5",
@@ -90,6 +91,7 @@
     "@types/nodemailer": "^6.4.7",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",

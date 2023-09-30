@@ -4,6 +4,7 @@ import compression from 'compression';
 import cors from 'cors';
 import passport from 'passport';
 import httpStatus from 'http-status';
+import cookieParser from 'cookie-parser';
 
 import config from './config/config';
 import morgan from './config/morgan';
@@ -29,6 +30,9 @@ app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
+
+// parse cookies
+app.use(cookieParser());
 
 // sanitize request data
 app.use(xss());
