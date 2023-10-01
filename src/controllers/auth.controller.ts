@@ -5,20 +5,29 @@ import { authService, userService, tokenService, emailService } from '@src/servi
 import exclude from '@src/utils/exclude';
 import catchAsync from '@src/utils/catchAsync';
 import config from '@src/config/config';
+import { setRefreshToken, setAccessToken } from '@src/utils/cookies';
 
 const register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await userService.createUser(email, password);
   const userWithoutPassword = exclude(user, ['password', 'createdAt', 'updatedAt']);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.status(httpStatus.CREATED).send({ user: userWithoutPassword, tokens });
+
+  setRefreshToken(res, tokens.refresh);
+  setAccessToken(res, tokens.access);
+
+  res.status(httpStatus.CREATED).send({ user: userWithoutPassword });
 });
 
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+
+  setRefreshToken(res, tokens.refresh);
+  setAccessToken(res, tokens.access);
+
+  res.send({ user });
 });
 
 const session = catchAsync(async (req, res) => {
@@ -27,16 +36,11 @@ const session = catchAsync(async (req, res) => {
   if (existingRefreshToken) {
     res.clearCookie(config.jwt.refreshTokenName);
     const newTokens = await authService.refreshAuth(existingRefreshToken);
-    const user = await authService.loginUserWithToken(newTokens.refresh.token);
+    const user = await userService.getUserByToken(newTokens.refresh.token);
 
-    res.cookie(config.jwt.refreshTokenName, newTokens.refresh.token, {
-      httpOnly: true,
-      expires: newTokens.refresh.expires
-    });
-    res.cookie(config.jwt.accessTokenName, newTokens.access.token, {
-      httpOnly: true,
-      expires: newTokens.access.expires
-    });
+    setRefreshToken(res, newTokens.refresh);
+    setAccessToken(res, newTokens.access);
+
     return res.send({ user });
   }
 
