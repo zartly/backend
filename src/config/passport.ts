@@ -1,13 +1,24 @@
 import { Strategy as JwtStrategy, ExtractJwt, VerifyCallback } from 'passport-jwt';
+import { Request } from 'express-serve-static-core';
 import { TokenType } from '@prisma/client';
 
 import prisma from '@src/client';
 
 import config from './config';
 
+const cookieExtractor = function (req: Request) {
+  const accessToken = req.cookies[config.jwt.accessTokenName];
+
+  if (!accessToken) {
+    return null;
+  }
+
+  return accessToken;
+};
+
 const jwtOptions = {
   secretOrKey: config.jwt.secret,
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
+  jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor])
 };
 
 const jwtVerify: VerifyCallback = async (payload, done) => {

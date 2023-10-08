@@ -6,19 +6,40 @@ import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
 
 import ApiError from '@src/utils/ApiError';
+import { userService } from '@src/services';
+import config from '@src/config/config';
 import { roleRights } from '@src/config/roles';
+import { authService } from '@src/services';
+import { setRefreshToken, setAccessToken } from '@src/utils/cookies';
 
 const verifyCallback =
   (
-    req: any,
+    req: Request,
+    res: Response,
     resolve: (value?: unknown) => void,
     reject: (reason?: unknown) => void,
     requiredRights: RoleRights[]
   ) =>
-  async (err: unknown, user: User | false, info: unknown) => {
+  async (err: unknown, userFromAccessToken: User | false, info: unknown) => {
+    let user = userFromAccessToken;
+
     if (err || info || !user) {
-      return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+      const existingRefreshToken = req.cookies[config.jwt.refreshTokenName];
+
+      if (!existingRefreshToken)
+        return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+
+      try {
+        const newTokens = await authService.refreshAuth(existingRefreshToken);
+        user = (await userService.getUserByToken(newTokens.access.token)) as User;
+
+        setRefreshToken(res, newTokens.refresh);
+        setAccessToken(res, newTokens.access);
+      } catch {
+        return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+      }
     }
+
     req.user = user;
 
     if (requiredRights.length) {
@@ -26,7 +47,7 @@ const verifyCallback =
       const hasRequiredRights = requiredRights.every((requiredRight) =>
         userRights.includes(requiredRight)
       );
-      if (!hasRequiredRights && req.params.userId !== user.id) {
+      if (!hasRequiredRights && Number(req.params.userId) !== user.id) {
         return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
       }
     }
@@ -41,7 +62,7 @@ const auth =
       passport.authenticate(
         'jwt',
         { session: false },
-        verifyCallback(req, resolve, reject, requiredRights)
+        verifyCallback(req, res, resolve, reject, requiredRights)
       )(req, res, next);
     })
       .then(() => next())

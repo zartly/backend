@@ -1,5 +1,4 @@
 import httpStatus from 'http-status';
-import jwt from 'jsonwebtoken';
 import { TokenType, User } from '@prisma/client';
 
 import ApiError from '@src/utils/ApiError';
@@ -11,12 +10,6 @@ import exclude from '@src/utils/exclude';
 import tokenService from './token.service';
 import userService from './user.service';
 
-/**
- * Login with username and password
- * @param {string} email
- * @param {string} password
- * @returns {Promise<Omit<User, 'password'>>}
- */
 const loginUserWithEmailAndPassword = async (
   email: string,
   password: string
@@ -37,21 +30,6 @@ const loginUserWithEmailAndPassword = async (
   return exclude(user, ['password']);
 };
 
-const loginUserWithToken = async (refreshToken: string) => {
-  // TODO Change jwt to verify after devide secret to refresh secret & access secret
-  const payload = jwt.decode(refreshToken);
-  const userId = Number(payload?.sub);
-  const user = await userService.getUserById(userId);
-
-  if (!user) throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
-  return exclude(user, ['password']);
-};
-
-/**
- * Logout
- * @param {string} refreshToken
- * @returns {Promise<void>}
- */
 const logout = async (refreshToken: string): Promise<void> => {
   const refreshTokenData = await prisma.token.findFirst({
     where: {
@@ -66,11 +44,6 @@ const logout = async (refreshToken: string): Promise<void> => {
   await prisma.token.delete({ where: { id: refreshTokenData.id } });
 };
 
-/**
- * Refresh auth tokens
- * @param {string} refreshToken
- * @returns {Promise<AuthTokensResponse>}
- */
 const refreshAuth = async (refreshToken: string): Promise<AuthTokensResponse> => {
   try {
     const refreshTokenData = await tokenService.verifyToken(refreshToken, TokenType.REFRESH);
@@ -82,12 +55,6 @@ const refreshAuth = async (refreshToken: string): Promise<AuthTokensResponse> =>
   }
 };
 
-/**
- * Reset password
- * @param {string} resetPasswordToken
- * @param {string} newPassword
- * @returns {Promise<void>}
- */
 const resetPassword = async (resetPasswordToken: string, newPassword: string): Promise<void> => {
   try {
     const resetPasswordTokenData = await tokenService.verifyToken(
@@ -106,11 +73,6 @@ const resetPassword = async (resetPasswordToken: string, newPassword: string): P
   }
 };
 
-/**
- * Verify email
- * @param {string} verifyEmailToken
- * @returns {Promise<void>}
- */
 const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
   try {
     const verifyEmailTokenData = await tokenService.verifyToken(
@@ -128,7 +90,6 @@ const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
 
 export default {
   loginUserWithEmailAndPassword,
-  loginUserWithToken,
   isPasswordMatch,
   encryptPassword,
   logout,

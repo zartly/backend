@@ -1,15 +1,12 @@
 import { User, Role, Prisma } from '@prisma/client';
 import httpStatus from 'http-status';
+import jwt from 'jsonwebtoken';
 
 import prisma from '@src/client';
 import ApiError from '@src/utils/ApiError';
+import exclude from '@src/utils/exclude';
 import { encryptPassword } from '@src/utils/encryption';
 
-/**
- * Create a user
- * @param {Object} userBody
- * @returns {Promise<User>}
- */
 const createUser = async (
   email: string,
   password: string,
@@ -29,15 +26,6 @@ const createUser = async (
   });
 };
 
-/**
- * Query for users
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
- * @param {number} [options.limit] - Maximum number of results per page (default = 10)
- * @param {number} [options.page] - Current page (default = 1)
- * @returns {Promise<QueryResult>}
- */
 const queryUsers = async <Key extends keyof User>(
   filter: object,
   options: {
@@ -71,12 +59,6 @@ const queryUsers = async <Key extends keyof User>(
   return users as Pick<User, Key>[];
 };
 
-/**
- * Get user by id
- * @param {ObjectId} id
- * @param {Array<Key>} keys
- * @returns {Promise<Pick<User, Key> | null>}
- */
 const getUserById = async <Key extends keyof User>(
   id: number,
   keys: Key[] = [
@@ -96,12 +78,16 @@ const getUserById = async <Key extends keyof User>(
   }) as Promise<Pick<User, Key> | null>;
 };
 
-/**
- * Get user by email
- * @param {string} email
- * @param {Array<Key>} keys
- * @returns {Promise<Pick<User, Key> | null>}
- */
+const getUserByToken = async (refreshToken: string) => {
+  // TODO Change jwt to verify after devide secret to refresh secret & access secret
+  const payload = jwt.decode(refreshToken);
+  const userId = Number(payload?.sub);
+  const user = await getUserById(userId);
+
+  if (!user) throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
+  return exclude(user, ['password']);
+};
+
 const getUserByEmail = async <Key extends keyof User>(
   email: string,
   keys: Key[] = [
@@ -121,12 +107,6 @@ const getUserByEmail = async <Key extends keyof User>(
   }) as Promise<Pick<User, Key> | null>;
 };
 
-/**
- * Update user by id
- * @param {ObjectId} userId
- * @param {Object} updateBody
- * @returns {Promise<User>}
- */
 const updateUserById = async <Key extends keyof User>(
   userId: number,
   updateBody: Prisma.UserUpdateInput,
@@ -147,11 +127,6 @@ const updateUserById = async <Key extends keyof User>(
   return updatedUser as Pick<User, Key> | null;
 };
 
-/**
- * Delete user by id
- * @param {ObjectId} userId
- * @returns {Promise<User>}
- */
 const deleteUserById = async (userId: number): Promise<User> => {
   const user = await getUserById(userId);
   if (!user) {
@@ -165,6 +140,7 @@ export default {
   createUser,
   queryUsers,
   getUserById,
+  getUserByToken,
   getUserByEmail,
   updateUserById,
   deleteUserById
